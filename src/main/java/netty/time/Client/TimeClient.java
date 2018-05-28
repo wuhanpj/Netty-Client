@@ -33,7 +33,7 @@ public class TimeClient {
             // Start the client.
             ChannelFuture f = b.connect("127.0.0.1", 8080).sync(); // (5)
             
-            f.channel().writeAndFlush(Unpooled.copiedBuffer("777".getBytes()));
+            f.channel().writeAndFlush(Unpooled.copiedBuffer("ht1234567890".getBytes()));
 
             // Wait until the connection is closed.
             f.channel().closeFuture().sync();
