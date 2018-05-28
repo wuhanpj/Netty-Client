@@ -1,5 +1,6 @@
 package netty.time.Client;
 
+import java.io.IOException;
 import java.util.Date;
 
 import io.netty.buffer.ByteBuf;
@@ -17,21 +18,39 @@ public class TimeClientHandler extends ChannelHandlerAdapter {
         	// 接收服务器传来的指令打印出来 
         	byte[] request = new byte[m.readableBytes()];
         	m.readBytes(request);
-        	//System.out.println(printHexString(request));
-            // 反馈信息给服务器
-        	byte[] response = new byte[8];
-        	response[0] = (byte) 0xCC;
-        	response[1] = (byte) 0x33;
-        	response[2] = (byte) 0xFF;
-        	response[3] = (byte) 0xFF;
-        	response[4] = (byte) 0x00;
-        	response[5] = (byte) 0x00;
-        	response[6] = (byte) 0xC3;
-        	response[7] = (byte) 0x3C;
-        	ByteBuf bf = ctx.alloc().buffer(8);
-        	bf.writeBytes(response);
-        	ctx.writeAndFlush(bf);        	
-        } finally {
+        	//System.out.println("收到服务端的指令-----" + printHexString(request));
+        	// 发送指令到com口
+        	ContinueRead.outputStream.write(request);
+        	// 如果堵塞队列中存在数据就将其输出
+            if (ContinueRead.msgQueue.size() > 0) {
+            	byte[] response = new byte[8];
+            	response = ContinueRead.msgQueue.take();
+                //System.out.println("收到485的数据：-----"+ printHexString(response));
+                // 反馈信息给服务器
+                ByteBuf bf = ctx.alloc().buffer(8);
+            	bf.writeBytes(response);
+            	ctx.writeAndFlush(bf);    
+            }
+//        	// 反馈信息给服务器
+//        	byte[] response = new byte[8];
+//        	response[0] = (byte) 0xCC;
+//        	response[1] = (byte) 0x33;
+//        	response[2] = (byte) 0xFF;
+//        	response[3] = (byte) 0xFF;
+//        	response[4] = (byte) 0x00;
+//        	response[5] = (byte) 0x00;
+//        	response[6] = (byte) 0xC3;
+//        	response[7] = (byte) 0x3C;
+//        	ByteBuf bf = ctx.alloc().buffer(8);
+//        	bf.writeBytes(response);
+//        	ctx.writeAndFlush(bf);          	
+        } catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
             m.release();
         }
     }

@@ -11,8 +11,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 public class TimeClient {
-	public static void main(String[] args) throws Exception {
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+	
+	public void startChannel() {
+		EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
             Bootstrap b = new Bootstrap(); // (1)
@@ -37,9 +38,23 @@ public class TimeClient {
             // Wait until the connection is closed.
             f.channel().closeFuture().sync();
             
-            
+        } catch(InterruptedException e) {
+        	
         } finally {
             workerGroup.shutdownGracefully();
         }
+	}
+	public static void main(String[] args) {
+		// 打开com接口
+		ContinueRead cRead = new ContinueRead();
+        int i = cRead.startComPort();
+        if(i == 1) {
+        	// 连接服务端
+        	TimeClient tc = new TimeClient();
+        	tc.startChannel();
+        } else {
+        	return;
+        }
+        
     }
 }
